@@ -1,0 +1,22 @@
+{
+  "name": "supportpilot",
+  "version": "1.0.0",
+  "description": "AI-Powered Customer Support Assistant and Omnichannel Ticket Dispatcher",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "keywords": [
+    "ai",
+    "customer-support",
+    "nlp",
+    "ticket-system",
+    "websocket"
+  ],
+  "author": "Alvin MS (Soulofghost)",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

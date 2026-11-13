@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SupportPilot — AI Support Dispatch & Triage</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="pilot-layout">
+        <!-- Top App Bar -->
+        <header class="pilot-navbar">
+            <div class="pilot-brand">
+                <span class="pilot-radar-icon"></span>
+                <div>
+                    <h1 class="pilot-title">SupportPilot</h1>
+                    <span class="pilot-tagline">AI Dispatcher & Omnichannel Incident Triage</span>
+                </div>
+            </div>
+            <div class="navbar-actions">
+                <button id="btn-create-ticket-modal" class="btn-create">+ New Ticket</button>
+                <div class="ws-status">
+                    <span id="ws-dot" class="dot live"></span>
+                    <span id="ws-status-text">DISPATCH STREAM CONNECTED</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 3-Column Command Center -->
+        <div class="pilot-grid">
+            <!-- Left Column: Incident Queue -->
+            <aside class="queue-panel">
+                <div class="queue-header">
+                    <span class="queue-title">INCIDENT QUEUE</span>
+                    <span id="queue-counter" class="badge-count">0</span>
+                </div>
+                <div class="queue-filters">
+                    <button class="filter-tab active" data-status="ALL">All</button>
+                    <button class="filter-tab alert-tab" data-status="escalated">Escalated</button>
+                    <button class="filter-tab" data-status="open">Open</button>
+                    <button class="filter-tab" data-status="ai_resolved">AI Resolved</button>
+                    <button class="filter-tab" data-status="closed">Closed</button>
+                </div>
+                <div id="ticket-list" class="queue-scroll">
+                    <!-- Ticket list items injected dynamically -->
+                </div>
+            </aside>
+
+            <!-- Center Column: Conversation Thread -->
+            <section class="conversation-panel">
+                <div class="thread-header">
+                    <div class="thread-info">
+                        <span id="thread-id" class="ticket-id">Select an incident</span>
+                        <h2 id="thread-subject" class="ticket-subject">SupportPilot Queue Ready</h2>
+                        <div class="ticket-submeta">
+                            <span id="thread-customer" class="submeta-item"></span>
+                            <span id="thread-intent-tag" class="submeta-tag"></span>
+                            <span id="thread-status-badge" class="submeta-badge"></span>
+                        </div>
+                    </div>
+                    <div class="thread-actions">
+                        <select id="status-updater" class="select-status" disabled>
+                            <option value="open">Open</option>
+                            <option value="ai_resolved">AI Resolved</option>
+                            <option value="escalated">Escalated</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="chat-stream" class="chat-stream">
+                    <div class="thread-empty">Select a ticket from the incident queue to review customer dialogue and AI classification telemetry.</div>
+                </div>
+
+                <div class="reply-composer">
+                    <div class="composer-toolbar">
+                        <span class="composer-label">RESPOND AS:</span>
+                        <label class="radio-label"><input type="radio" name="senderRole" value="agent" checked> Specialist Agent</label>
+                        <label class="radio-label"><input type="radio" name="senderRole" value="customer"> Customer</label>
+                    </div>
+                    <div class="composer-input-row">
+                        <textarea id="composer-text" placeholder="Type response or select a resolution macro from the dispatch console..." disabled></textarea>
+                        <button id="btn-send-reply" class="btn-send" disabled>Send Message</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: AI Triage Telemetry -->
+            <aside class="telemetry-panel">
+                <div class="telemetry-header">
+                    <span>AI DISPATCH TELEMETRY</span>
+                </div>
+                <div class="telemetry-body">
+                    <!-- Intent Classification -->
+                    <div class="telemetry-box">
+                        <span class="box-label">INTENT CLASSIFICATION</span>
+                        <div class="intent-stat">
+                            <span id="telemetry-intent" class="intent-name">--</span>
+                            <span id="telemetry-confidence" class="intent-pct">0% Confidence</span>
+                        </div>
+                        <div class="progress-track">
+                            <div id="confidence-bar" class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sentiment Analysis -->
+                    <div class="telemetry-box">
+                        <span class="box-label">CUSTOMER SENTIMENT POLARITY</span>
+                        <div class="sentiment-indicator">
+                            <span id="telemetry-sentiment" class="sentiment-score">0.00</span>
+                            <span id="sentiment-desc" class="sentiment-desc">Neutral</span>
+                        </div>
+                    </div>
+
+                    <!-- Escalation Matrix -->
+                    <div class="telemetry-box">
+                        <span class="box-label">ESCALATION GUARDRAILS</span>
+                        <div id="escalation-state" class="escalation-status clear">
+                            <span>AUTONOMOUS TIER-1 AI ACTIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- Resolution Macros -->
+                    <div class="telemetry-box macros-box">
+                        <span class="box-label">CANNED RESOLUTION MACROS</span>
+                        <div id="macro-list" class="macro-chips">
+                            <!-- Macro chips dynamically loaded -->
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- New Ticket Modal -->
+    <div id="ticket-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Submit Customer Support Inquiry</h3>
+                <button id="btn-close-ticket-modal" class="btn-modal-close">&times;</button>
+            </div>
+            <form id="new-ticket-form" class="modal-form">
+                <div class="form-group">
+                    <label>Customer Full Name</label>
+                    <input type="text" id="cust-name" required placeholder="e.g. Maya Lin">
+                </div>
+                <div class="form-group">
+                    <label>Customer Email Address</label>
+                    <input type="email" id="cust-email" required placeholder="e.g. maya@acme.corp">
+                </div>
+                <div class="form-group">
+                    <label>Subject</label>
+                    <input type="text" id="cust-subject" required placeholder="e.g. Unauthorized invoice charge on corporate card">
+                </div>
+                <div class="form-group">
+                    <label>Message Content</label>
+                    <textarea id="cust-message" required rows="4" placeholder="Describe the inquiry. SupportPilot will automatically classify the intent and attempt tier-1 resolution."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="btn-cancel-modal" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-submit">Dispatch Incident</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
